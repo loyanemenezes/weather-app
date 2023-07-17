@@ -1,51 +1,42 @@
-const api = {
+const input = document.querySelector("input");
+const button = document.querySelector("button");
 
-}
+const place = document.querySelector("#place");
+const degrees = document.querySelector("#degrees");
+const img = document.querySelector("img");
+const wind = document.querySelector("#wind");
+const content = document.querySelector(".content");
 
-const searchBox = document.querySelector('.searchbox');
-searchBox.addEventListener('keypress', setQuery);
+button.addEventListener("click", () => {
+  if (!input.value) return;
 
-function setQuery(evt) {
-  if (evt.keyCode == 13) {
-    getResults(searcBox.value);
-    console.log(searchBox.value);
+  getDataApi();
+});
+
+async function getDataApi() {
+  let url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURI(
+    input.value
+)}&units=metric&appid=dd654c5efea8f89fada92e50149369c4`;
+
+  try {
+    await fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.cod && data.cod === "404") {
+          return alert("Local não encontrado!");
+        }
+
+        loadData(data);
+      });
+  } catch (error) {
+    alert(error);
   }
 }
 
-function getResults(query) {
-  fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
-  .then(weather => {
-    return weather.json();
-  }).then(displayResults);
-}
-
-function displayResults(weather) {
-  console.log(weather);
-  let city = document.querySelector('.location .city');
-  city.innerText = `${weather.name}, ${waather.sys.country}`;
-
-  let now = new Date();
-  let date = document.querySelector('.location .date')
-  date.innerText = dateBuilder(now);
-
-  let temp = document.querySelector('current . temp');
-  temp.innerHTML = `${Math.round(weather.main.temp)}<span>°c</span>}`;
-
-  let weather_el = document.querySelector('.current .weather');
-  weather_el.innerText = weather.weather[0].main;
-
-  let hilow = document.querySelector('hi-low');
-  hilow.innerText = `$Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
-}
-
-function dateBuilder(d) {
-  let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-  let day = days[d.getDay()];
-  let date = d.getDate();
-  let month = months[d.getmonths()];
-  let year = d.getFullYear();
-
-  return `${day} ${date} ${month} ${year}`;
+function loadData(data) {
+  place.innerHTML = `${data.name}, ${data.sys.country}`;
+  degrees.innerHTML = `Temperatura: ${Math.floor(data.main.temp)}° C`;
+  img.src = `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+  wind.innerHTML = `Vento: ${data.wind.speed} km/h`;
+  content.style.display = "flex";
 }
